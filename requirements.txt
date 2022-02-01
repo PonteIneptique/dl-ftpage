@@ -1,1 +1,2 @@
 requests==2.27.0
+click==8.0.3
