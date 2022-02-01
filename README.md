@@ -21,3 +21,7 @@ or, use a text file with all URLs (one per line, such as [source.txt](source.txt
 #### Smithonian
 
 `python dlftpage.py --mode smithonian https://transcription.si.edu/view/8342/SIL-39088003898491_003`
+
+#### Library of Congress
+
+`python dlftpage.py --mode LibCongress https://transcription.si.edu/view/8342/SIL-39088003898491_003`

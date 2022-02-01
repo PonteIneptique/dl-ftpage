@@ -2,6 +2,7 @@ import requests
 import re
 import shutil
 import click
+import bs4
 
 
 FTP_RESOURCE_RE = re.compile(r'tileSources: \["([^"]+\.json)"\]')
@@ -71,12 +72,32 @@ def download_smithonian(page: str):
     click.echo(f"[x] Done : {page}")
 
 
+def download_LoC(page: str):
+    click.echo(f"[ ] Taking care of {page}")
+    data = requests.get(page)
+    bs = bs4.BeautifulSoup(data.text)
+    og_image = bs.find("meta", property="og.image")
+    if og_image:
+        og_image = og_image["content"]
+        click.echo(f"[ ] [x] Found Library of Congress image at {og_image}")
+        link = re.sub(r"pct:\d+", "pct:100", og_image)
+        click.echo(f"[ ] [x] Image link {link}")
+        fname = [x for x in page.split("/") if x][-1]
+        save(f"{fname}.jpg", link)
+    else:
+        click.echo(click.style("[ ] [ ] Found NOTHING", fg="red"))
+
+    click.echo(f"[x] Done : {page}")
+
+
 def iter_input(args, mode="fromthepage"):
     """ Parse the list of things to download: can be text files (.txt extension)
             or FromThePage urls
     """
     if mode == "fromthepage":
         download = download_fromthepage
+    elif mode == "LibCongress":
+        download = download_LoC
     else:
         download = download_smithonian
 
@@ -93,7 +114,7 @@ def iter_input(args, mode="fromthepage"):
 
 @click.command()
 @click.argument("source", nargs=-1)
-@click.option("--mode", type=click.Choice(["fromthepage", "smithonian"]),
+@click.option("--mode", type=click.Choice(["fromthepage", "smithonian", "LibCongress"]),
                 show_default=True, help="Website used", default="fromthepage")
 def cli(source, mode):
     """ Download images from FromThePage or other similar websites by providing URL of transcriptions, such as :
